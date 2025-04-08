@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
+const cors = require("cors");
 
 // Initialize the app
 const app = express();
@@ -11,6 +12,7 @@ const PORT = 3000;
 // Middleware
 app.use(express.json()); // Built-in body-parser
 app.use(morgan("dev"));
+app.use(cors());
 
 // Connect to MongoDB
 const MONGODB_URI = process.env.MONGODB_URI;
