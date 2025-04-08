@@ -34,10 +34,10 @@ app.post("/api/gps", async (req, res) => {
   try {
     const { latitude, longitude, timestamp } = req.body;
 
-    if (!latitude || !longitude || !timestamp) {
+    if (!latitude || !longitude) {
       return res
         .status(400)
-        .json({ error: "Latitude, longitude, and timestamp are required." });
+        .json({ error: "Latitude and longitude are required." });
     }
 
     const newGpsData = new GpsData({ latitude, longitude, timestamp });
