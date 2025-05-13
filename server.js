@@ -1,5 +1,6 @@
 // Import necessary modules
 require("dotenv").config();
+const sendSMS = require("./utils/smsSender");
 const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
