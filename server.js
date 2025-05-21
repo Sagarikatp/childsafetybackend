@@ -5,18 +5,19 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
+const authRoutes = require("./auth");
 
 // Initialize the app
 const app = express();
 const PORT = 3000;
+// Connect to MongoDB
+const MONGODB_URI = process.env.MONGODB_URI;
 
 // Middleware
 app.use(express.json()); // Built-in body-parser
 app.use(morgan("dev"));
 app.use(cors());
-
-// Connect to MongoDB
-const MONGODB_URI = process.env.MONGODB_URI;
+app.use("/api/auth", authRoutes);
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
