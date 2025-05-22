@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
 const authRoutes = require("./auth");
+const authenticateToken = require("./middleware/auth");
 
 // Initialize the app
 const app = express();
@@ -34,7 +35,7 @@ const gpsSchema = new mongoose.Schema({
 const GpsData = mongoose.model("GpsData", gpsSchema);
 
 // POST endpoint to store GPS data
-app.post("/api/gps", async (req, res) => {
+app.post("/api/gps", authenticateToken, async (req, res) => {
   try {
     const { latitude, longitude, timestamp } = req.body;
 
@@ -56,7 +57,7 @@ app.post("/api/gps", async (req, res) => {
 });
 
 // GET endpoint to retrieve all stored GPS data
-app.get("/api/gps", async (req, res) => {
+app.get("/api/gps", authenticateToken, async (req, res) => {
   try {
     const gpsRecords = await GpsData.find().sort({ timestamp: -1 }); // Sort by latest
     res.status(200).json(gpsRecords);
