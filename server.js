@@ -5,8 +5,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
 const cors = require("cors");
-const authRoutes = require("./auth");
+const authRoutes = require("./routes/authRoutes");
 const authenticateToken = require("./middleware/auth");
+const GpsData = require("./schema/gpsSchema");
+const geofenceRoutes = require("./routes/geofenceRoutes");
 
 // Initialize the app
 const app = express();
@@ -19,20 +21,12 @@ app.use(express.json()); // Built-in body-parser
 app.use(morgan("dev"));
 app.use(cors());
 app.use("/api/auth", authRoutes);
+app.use("/api/geofence", geofenceRoutes);
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
-
-// Define GPS Data Schema
-const gpsSchema = new mongoose.Schema({
-  latitude: { type: Number, required: true, min: -90, max: 90 },
-  longitude: { type: Number, required: true, min: -180, max: 180 },
-  timestamp: { type: Date, required: true, default: Date.now },
-});
-
-const GpsData = mongoose.model("GpsData", gpsSchema);
 
 // POST endpoint to store GPS data
 app.post("/api/gps", authenticateToken, async (req, res) => {
