@@ -9,6 +9,8 @@ const authRoutes = require("./routes/authRoutes");
 const authenticateToken = require("./middleware/auth");
 const GpsData = require("./schema/gpsSchema");
 const geofenceRoutes = require("./routes/geofenceRoutes");
+const Geofence = require("./schema/geofenceSchema");
+const haversine = require("haversine-distance");
 
 // Initialize the app
 const app = express();
@@ -29,6 +31,7 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // POST endpoint to store GPS data
+
 app.post("/api/gps", authenticateToken, async (req, res) => {
   try {
     const { latitude, longitude, timestamp } = req.body;
@@ -41,6 +44,34 @@ app.post("/api/gps", authenticateToken, async (req, res) => {
 
     const newGpsData = new GpsData({ latitude, longitude, timestamp });
     await newGpsData.save();
+
+    // Get the user's geofence (assuming one per user)
+    const geofence = await Geofence.findOne({ createdBy: req.user.id });
+    if (!geofence) {
+      return res
+        .status(404)
+        .json({ error: "Geofence not found for this user." });
+    }
+
+    const center = {
+      lat: geofence.center.coordinates[0],
+      lon: geofence.center.coordinates[1],
+    };
+    console.log(center);
+
+    const current = {
+      lat: latitude,
+      lon: longitude,
+    };
+    console.log(current);
+    const distance = haversine(center, current); // in meters
+
+    if (distance > geofence.radius) {
+      // Location is outside geofence
+      const phoneNumber = "+918590927955"; // Assuming phone is stored in user object
+      const message = "Alert: Student has moved outside the geofence area.";
+      await sendSMS(phoneNumber, message);
+    }
 
     res.status(201).json({ message: "GPS data added successfully." });
   } catch (error) {
