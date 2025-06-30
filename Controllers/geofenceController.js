@@ -62,7 +62,49 @@ const getGeofences = async (req, res) => {
   }
 };
 
+const deleteGeofence = async (req, res) => {
+  try {
+    const geofenceId = req.params.id;
+    const userId = req.user?.id; // Ensure authentication middleware sets this
+
+    if (!geofenceId) {
+      return res.status(400).json({
+        success: false,
+        message: "Geofence ID is required.",
+      });
+    }
+
+    // Find the geofence to ensure it exists and was created by the user
+    const geofence = await Geofence.findOne({
+      _id: geofenceId,
+      createdBy: userId,
+    });
+
+    if (!geofence) {
+      return res.status(404).json({
+        success: false,
+        message: "Geofence not found or not authorized to delete.",
+      });
+    }
+
+    // Delete the geofence
+    await Geofence.deleteOne({ _id: geofenceId });
+
+    res.status(200).json({
+      success: true,
+      message: "Geofence deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Geofence deletion error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete geofence. " + error.message,
+    });
+  }
+};
+
 module.exports = {
   createGeofence,
   getGeofences,
+  deleteGeofence,
 };
