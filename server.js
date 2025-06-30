@@ -34,7 +34,7 @@ mongoose
 // POST endpoint to store GPS data
 app.post("/api/gps", authenticateToken, async (req, res) => {
   try {
-    const { latitude, longitude, timestamp } = req.body;
+    const { latitude, longitude } = req.body;
     const user = req.user;
 
     if (!latitude || !longitude) {
@@ -43,7 +43,11 @@ app.post("/api/gps", authenticateToken, async (req, res) => {
         .json({ error: "Latitude and longitude are required." });
     }
 
-    const newGpsData = new GpsData({ latitude, longitude, timestamp });
+    const newGpsData = new GpsData({
+      latitude,
+      longitude,
+      createdBy: user.id,
+    });
     await newGpsData.save();
 
     const geofences = await Geofence.find({ createdBy: user.id });
@@ -109,7 +113,9 @@ app.post("/api/gps", authenticateToken, async (req, res) => {
 // GET endpoint to retrieve all stored GPS data
 app.get("/api/gps", authenticateToken, async (req, res) => {
   try {
-    const gpsRecords = await GpsData.find().sort({ timestamp: -1 }); // Sort by latest
+    const gpsRecords = await GpsData.find({ createdBy: req.user.id }).sort({
+      timestamp: -1,
+    }); // Sort by latest
     res.status(200).json(gpsRecords);
   } catch (error) {
     res

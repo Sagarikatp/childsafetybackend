@@ -55,7 +55,10 @@ const createGeofence = async (req, res) => {
 // Get all geofences
 const getGeofences = async (req, res) => {
   try {
-    const geofences = await Geofence.find().populate("createdBy", "name email"); // Optional: populate user info
+    const geofences = await Geofence.find({ createdBy: req.user.id }).populate(
+      "createdBy",
+      "name email"
+    ); // Optional: populate user info
     res.status(200).json({ success: true, data: geofences });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -65,7 +68,7 @@ const getGeofences = async (req, res) => {
 const deleteGeofence = async (req, res) => {
   try {
     const geofenceId = req.params.id;
-    const userId = req.user?.id; // Ensure authentication middleware sets this
+    const userId = req.user.id; // Ensure authentication middleware sets this
 
     if (!geofenceId) {
       return res.status(400).json({
